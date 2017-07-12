@@ -9,12 +9,14 @@ var frame = 0;
 
 function init(){
   canvas = document.getElementsByTagName('canvas')[0];
-  canvas.width = 520;
+  canvas.width = 700;
   canvas.height = 480;
 
   ctx = canvas.getContext("2d");
   images = new ImageLoader();
   images.load("pc","pc.png");
+  images.load("bomb","bomb.png");
+  images.load("tesouro","tesouro.png");
 
 
   pc = new Sprite();
@@ -25,14 +27,14 @@ function init(){
   map.setCells([
     [1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,2,3,3,3,3,3,3,3,3,3,3,1],
+    [1,3,3,3,3,3,5,3,3,3,3,3,1],
+    [1,3,3,3,3,3,3,3,3,3,3,3,1],
+    [1,3,4,3,3,3,3,4,3,3,3,3,1],
     [1,3,3,3,3,3,3,3,3,3,3,3,1],
     [1,3,3,3,3,3,3,3,3,3,3,3,1],
-    [1,3,3,3,3,3,3,3,3,3,3,3,1],
-    [1,3,3,3,3,3,3,3,3,3,3,3,1],
-    [1,3,3,3,3,3,3,3,3,3,3,3,1],
-    [1,3,3,3,3,3,3,3,3,3,3,3,1],
-    [1,3,3,3,3,3,3,3,3,3,3,3,1],
-    [1,3,3,3,3,3,3,3,3,3,3,3,1],
+    [1,3,3,3,3,4,3,3,5,3,3,3,1],
+    [1,3,4,3,3,3,3,3,3,3,3,3,1],
+    [1,3,3,3,5,3,3,3,3,3,5,3,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1],
   ],pc);
   initControls();
@@ -43,16 +45,51 @@ function init(){
 function passo(t){
   dt = (t-anterior)/1000;
   requestAnimationFrame(passo);
-
-
   ctx.clearRect(0,0, canvas.width, canvas.height);
-  pc.mover(map, dt);
- // map.perseguir(pc);
- // map.mover(dt);
-  map.desenhar(ctx);
-  pc.desenhar(ctx);
 
 
+  if(!map.isGameOver){
+      if(!map.isVictory){
+
+        //Testes
+        pc.colisaoObjeto(ctx, map);
+        
+        //Verificacao
+        //map.tempoAcabou();
+        map.isVitoria();
+
+        //Movimentacao e Verificacao
+        pc.mover(map, dt);
+        pc.sensor(ctx, map);
+
+        //Render
+        map.showInformations(ctx);
+        map.desenhar(ctx,images);
+        pc.desenhar(ctx);
+
+
+      }else{
+
+        //Render
+        map.showInformations(ctx);
+        map.desenhar(ctx);//, images);
+        pc.desenhar(ctx);
+
+        // -- Vitória -- 
+        ctx.fillStyle = "blue";
+        ctx.fillText("Vitória", 500, 225);
+      }
+  }else{
+    
+    //Render
+    map.showInformations(ctx);
+    map.desenhar(ctx);
+    pc.desenhar(ctx);
+
+    // -- Fim de Jogo --
+    ctx.fillStyle = "blue";
+    ctx.fillText("Game Over", 500, 225);
+  }
 
   anterior = t;
   frame = (frame<9)?frame:1;
@@ -79,7 +116,6 @@ function initControls(){
         pc.vx = 100;
         pc.vy = 0;
         pc.pose = 0;
-        e.preventDefault();
         break;
       case 40:    // para cima
         pc.vy = 100;
